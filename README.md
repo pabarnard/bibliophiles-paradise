@@ -5,10 +5,10 @@ This application allows book lovers to search for and save books they've read, a
 This project will be built in phases:
 1. Prototyping (DONE):
     - Built out the wireframe with **Balsamiq** to foster collaboration with nontechnical stakeholders and developers 
-2. Utilizing MySQL for a database management system (DBMS) and designing the schema (current phase):
+2. Utilizing MySQL for a database management system (DBMS) and designing the schema (DONE):
     - The wireframe will inform the tables and relationships required for the application to run.  
     - Information from **Google Books API** will be saved locally so that API calls are minimized and thus limited to only searching for new books no users have read or added yet.
-3. Back end with using the **Flask** microframework:
+3. Back end with using the **Flask** microframework (current phase):
     - Define the routes, models, and more using the Models-Views-Controllers (MVC) design paradigm.
     - Tie in the Google Books API to allow users to add books to the database and their libraries.
     - Create queries to retrieve relevant books, reviews and thoughts accordingly.
