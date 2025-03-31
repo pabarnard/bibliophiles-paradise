@@ -12,6 +12,12 @@ This project will be built in phases:
     - Define the routes, models, and more using the Models-Views-Controllers (MVC) design paradigm.
     - Tie in the Google Books API to allow users to add books to the database and their libraries.
     - Create queries to retrieve relevant books, reviews and thoughts accordingly.
+    - List of packages installed:
+        - flask: For the application itself
+        - requests: For the Google Books API
+        - flask-mysql: For tying in MySQL
+        - flask-bcrypt: For hashing and securing passwords
+        - python-dotenv: For loading variables in .env files
 4. Front end: 
     - Building out the basic HTML *only* and the needed forms and features.
     - No styling will be applied yet.  This will happen in a later phase.
