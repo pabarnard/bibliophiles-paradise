@@ -1,0 +1,39 @@
+from flask import request, render_template, redirect, url_for, session, get_flashed_messages
+from flask_app import app
+from flask_app.models import user
+
+@app.route("/", methods=["GET","POST"])
+def registration():
+    if request.method == "GET":        
+        error_data = {
+            "username": "",
+            "email": "",
+            "birthdate": "",
+            "password": "",
+            "confirmed_password": "",
+        }
+        # Grab error messages from validations, if applicable
+        error_msgs = get_flashed_messages(with_categories=True)
+        for key, msg in error_msgs:
+            error_data[key] = error_data[key] + " " + msg if error_data[key] else error_data[key] + msg
+        return render_template("registration.html", 
+            error_data = error_data, 
+            form_data = session["form_data"] if "form_data" in session else {})
+    # At this point, it's a POST request
+    if not user.User.validate_registration(request.form):
+        session["form_data"] = request.form
+        return redirect(url_for("registration"))
+    session.clear() # Remove form data from session
+    # Add user to database here while saving the user in session, then redirect to dashboard
+    return redirect("/dashboard")
+
+@app.route("/login", methods=["GET", "POST"])
+def login():
+    if request.method == "GET":
+        return render_template("login.html")
+    return None # Placeholder
+
+@app.route("/logout")
+def logout():
+    session.clear()
+    return redirect(url_for("registration"))

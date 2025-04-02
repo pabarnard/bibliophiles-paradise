@@ -1,10 +1,7 @@
 from flask_app import app
-import requests
-import os
-
-@app.route("/")
-def test_route():
-    return "Hello there!"
+from flask_app.controllers import user_controller
+from flask import render_template
+import requests, os
 
 @app.route("/search")
 def search_test():
@@ -16,6 +13,10 @@ def search_test():
         })
     print(r.json())
     return "Hi!"
+
+@app.route("/dashboard") # TEMPORARY route - landing page - for testing registration, logging in and logging out
+def dashboard():
+    return render_template("dashboard.html")
 
 if __name__=="__main__":
     app.run(debug=True,port=5001)

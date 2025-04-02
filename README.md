@@ -18,6 +18,7 @@ This project will be built in phases:
         - flask-mysql: For tying in MySQL
         - flask-bcrypt: For hashing and securing passwords
         - python-dotenv: For loading variables in .env files
+        - python-dateutil: For calculating the difference in years between dates
 4. Front end: 
     - Building out the basic HTML *only* and the needed forms and features.
     - No styling will be applied yet.  This will happen in a later phase.

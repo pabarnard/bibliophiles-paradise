@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register for Bibliophile's Paradise</title>
+</head>
+<body>
+    <h1>Welcome to the Bibliophile's Paradise!  Please register:</h1>
+    <form action="/" method="POST">
+        <div>
+            <label for="username">Username:</label>
+            <input type="text" id="username" name="username" value="{{ form_data['username'] }}">
+            {% if error_data["username"] %}
+                <p style="color: red;">{{ error_data["username"] }}</p> <!-- Temporary styling -->
+            {% endif %}
+        </div>
+        <div>
+            <label for="email">Email:</label>
+            <input type="email" id="email" name="email" value="{{ form_data['email'] }}">
+            {% if error_data["email"] %}
+                <p style="color: red;">{{ error_data["email"] }}</p> <!-- Temporary styling -->
+            {% endif %}
+        </div>
+        <div>
+            <label for="birthdate">Birth date:</label>
+            <input type="date" id="birthdate" name="birthdate" value="{{ form_data['birthdate'] }}">
+            {% if error_data["birthdate"] %}
+                <p style="color: red;">{{ error_data["birthdate"] }}</p> <!-- Temporary styling -->
+            {% endif %}
+        </div>
+        <div>
+            <label for="password">Password:</label>
+            <input type="password" id="password" name="password" value="{{ form_data['password'] }}">
+            {% if error_data["password"] %}
+                <p style="color: red;">{{ error_data["password"] }}</p> <!-- Temporary styling -->
+            {% endif %}
+        </div>
+        <div>
+            <label for="confirmed_password">Confirm password:</label>
+            <input type="password" id="confirmed_password" name="confirmed_password" value="{{ form_data['confirmed_password'] }}">
+        </div>
+        <input type="submit" value="Register">
+    </form>
+    <p>Already have an account?  Please <a href="/login">log in</a>!</p>
+</body>
+</html>
