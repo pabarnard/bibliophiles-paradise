@@ -1,6 +1,6 @@
 from flask_app import app
 from flask_app.controllers import user_controller
-from flask import render_template
+from flask import render_template, session, redirect, url_for
 import requests, os
 
 @app.route("/search")
@@ -16,6 +16,8 @@ def search_test():
 
 @app.route("/dashboard") # TEMPORARY route - landing page - for testing registration, logging in and logging out
 def dashboard():
+    if "user_id" not in session:
+        return redirect(url_for("registration"))
     return render_template("dashboard.html")
 
 if __name__=="__main__":

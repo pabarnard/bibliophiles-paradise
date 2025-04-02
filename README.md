@@ -15,7 +15,7 @@ This project will be built in phases:
     - List of packages installed:
         - flask: For the application itself
         - requests: For the Google Books API
-        - flask-mysql: For tying in MySQL
+        - PyMySQL: For tying in MySQL
         - flask-bcrypt: For hashing and securing passwords
         - python-dotenv: For loading variables in .env files
         - python-dateutil: For calculating the difference in years between dates

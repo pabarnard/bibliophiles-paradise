@@ -1,34 +1,50 @@
-from flask_app import app
+from flask_app import app, bcrypt
 from flask import flash
 import re
 from datetime import date
 from dateutil.relativedelta import relativedelta
+from flask_app.config.mysql_connection import connect_to_db
 
 email_regex = re.compile(r"^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$")
 
 class User:
-    def __init__(self, data):
-        self.id = data["id"]
-        self.username = data["username"]
-        self.email = data["email"]
-        self.password = data["password"]
-        self.created_at = data["created_at"]
-        self.updated_at = data["updated_at"]
-        self.bookshelf = data["bookshelf"]
-        self.reviews = data["reviews"]
-        self.thoughts = data["thoughts"]
+    db_name = "bibliophile_schema"
+
+    def __init__(self, data: dict):
+        self.id = data.get("id")
+        self.username = data.get("username")
+        self.email = data.get("email")
+        self.password = data.get("password")
+        self.created_at = data.get("created_at")
+        self.updated_at = data.get("updated_at")
+        self.bookshelf = data.get("bookshelf")
+        self.reviews = data.get("reviews")
+        self.thoughts = data.get("thoughts")
 
     @classmethod
     def find_by_username(cls, data):
-        pass
+        query = "SELECT * FROM users WHERE username = %(username)s;"
+        return connect_to_db(cls.db_name, query, data)
 
     @classmethod
+    def find_by_email(cls, data):
+        query = "SELECT * FROM users WHERE email = %(email)s;"
+        return connect_to_db(cls.db_name, query, data)
+    
+    @classmethod
     def register_new_user(cls, data):
-        pass
+        # Hash the user's password before saving in the database
+        updated_data = {
+            "username": data["username"],
+            "birthdate": data["birthdate"],
+            "email": data["email"]
+        }
+        updated_data["password"] = bcrypt.generate_password_hash(data["password"])
+        query = "INSERT INTO users (id, username, email, password) VALUES (UUID(), %(username)s, %(email)s, %(password)s);"
+        return connect_to_db(cls.db_name, query, updated_data)
 
     @staticmethod
     def validate_registration(form_data):
-        print(form_data)
         all_valid = True
         if "username" not in form_data or form_data["username"] == "":
             flash("Please enter a username!","username")
@@ -36,18 +52,23 @@ class User:
         elif len(form_data["username"]) < 3:
             flash("Your username must be 3 or more characters!", "username")
             all_valid = False
-        # To add: validation for unique username
-        # elif check database
-
-        # Test email validation with regex
-        if not email_regex.match(form_data["email"]):
+        # Validate for unique username - WARNING: this is NOT case sensitive
+        elif len(User.find_by_username({"username": form_data["username"]})) > 0:
+            flash("Someone already registered with that username.", "username")
+            all_valid = False
+        # Ensure something is entered for email, then make sure it's the correct pattern
+        if "email" not in form_data or form_data["email"] == "":
+            flash("Please enter your email.", "email")
+            all_valid = False
+        elif not email_regex.match(form_data["email"]):
             flash("Your email is in an invalid format.", "email")
             all_valid = False
-        # To add: check for unique email
-        # elif check database
-
+        # Check for unique email
+        elif len(User.find_by_email({"email": form_data["email"]})) > 0:
+            flash("Someone already registered with that email.", "email")
+            all_valid = False
         # Check birthdate - must be 18 years or older, but first check if it's entered
-        if "birthdate" not in form_data:
+        if "birthdate" not in form_data or form_data["birthdate"] == "":
             flash("Please enter a birthdate.  You must be at least 18 to register.", "birthdate")
             all_valid = False
         else: 
@@ -82,7 +103,7 @@ class User:
                     # print(cur_char + " is digit")
                     has_digit = True
                 elif re.match(r"^\W$", cur_char): # Special character that's not the underscore _
-                    print(cur_char + " is special")
+                    # print(cur_char + " is special")
                     has_special = True
             # print(has_upper, has_lower, has_digit, has_special)
             if not has_upper or not has_lower or not has_digit or not has_special or \
@@ -93,4 +114,17 @@ class User:
     
     @staticmethod
     def validate_login(form_data):
-        pass
+        if "username" not in form_data or form_data["username"] == "" or "password" not in form_data or form_data["password"] == "":
+            flash("Please enter your username and password!","username")
+            return False
+        possible_user = User.find_by_username({"username": form_data["username"]})
+        all_valid = True
+        if len(possible_user) == 0: # No user found
+            flash("Please enter your username and password!","username")
+            all_valid = False
+        else:
+            found_user = User(possible_user[0])
+            if not bcrypt.check_password_hash(found_user.password, form_data["password"]): # Invalid password
+                flash("Please enter your username and password!","username")
+                all_valid = False
+        return all_valid
