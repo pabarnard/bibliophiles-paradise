@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book search</title>
+</head>
+<body>
+    <h1>Search for a new book:</h1>
+    <p>Search by author and title:</p>
+    <form action="/search-by-title-and-author" method="POST">
+        <div>
+            <label for="title">Title:</label>
+            <input type="text" id="title" name="title" value="{{ form_data['title'] }}">
+            {% if error_data["title"] %}
+                <p style="color: red;">{{ error_data["title"] }}</p> <!-- Temporary styling -->
+            {% endif %}
+        </div>
+        <div>
+            <label for="author">Author:</label>
+            <input type="text" id="author" name="author" value="{{ form_data['author'] }}">
+            {% if error_data["author"] %}
+                <p style="color: red;">{{ error_data["author"] }}</p> <!-- Temporary styling -->
+            {% endif %}
+        </div>
+        <input type="submit" value="Search">
+    </form>
+    <p>Search by ISBN:</p>
+    <form action="/search-by-isbn" method="POST">
+        <div>
+            <label for="isbn">ISBN (10 or 13 digits):</label>
+            <input type="text" id="isbn" name="isbn" value="{{ form_data['isbn'] }}">
+            {% if error_data["isbn"] %}
+            <p style="color: red;">{{ error_data["isbn"] }}</p> <!-- Temporary styling -->
+            {% endif %}
+        </div>
+        <input type="submit" value="Search">
+    </form>
+    <h2>Results:</h2>
+    {% for book in book_results %}
+    <img src="{{ book.thumbnail }}">
+    <p>{{ book.title }}</p>
+    <p>by {{ book.authors }}</p>
+    <p>ISBN: {{ book.isbn13 }}</p>
+    <p>Pages: {{ book.page_count }}</p>
+    <p>Publication date: {{ book.publication_date }}</p>
+    <hr/> <!-- Temporary -->
+    {% endfor %}
+</body>
+</html>

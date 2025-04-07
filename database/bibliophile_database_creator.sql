@@ -33,6 +33,7 @@ ENGINE = InnoDB;
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `bibliophile_schema`.`books` (
   `id` VARCHAR(255) NOT NULL,
+  `google_volume_id` VARCHAR(3072) NULL,
   `title` VARCHAR(3072) NULL,
   `authors` VARCHAR(3072) NULL,
   `publication_date` DATE NULL,
