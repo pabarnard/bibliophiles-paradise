@@ -20,7 +20,7 @@ def registration():
             error_data[key] = error_data[key] + " " + msg if error_data[key] else error_data[key] + msg
         return render_template("registration.html", 
             error_data = error_data, 
-            form_data = session["form_data"] if "form_data" in session else {})
+            form_data = session.get("form_data", {}))
     # At this point, it's a POST request
     if not user.User.validate_registration(request.form):
         session["form_data"] = request.form
@@ -30,9 +30,9 @@ def registration():
     new_id = user.User.register_new_user(request.form)
     if new_id != None:
         session["user_id"] = new_id
-        return redirect("/dashboard")
+        return redirect(url_for("dashboard"))
     else: # This will be the result of an error with the back end (500-series error eventually)
-        return redirect("/")
+        return redirect(url_for("registration"))
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
@@ -49,7 +49,7 @@ def login():
             error_data[key] = error_data[key] + " " + msg if error_data[key] else error_data[key] + msg
         return render_template("login.html", 
             error_data = error_data, 
-            form_data = session["form_data"] if "form_data" in session else {})
+            form_data = session.get("form_data", {}))
     # At this point, it's a POST request
     if not user.User.validate_login(request.form):
         session["form_data"] = request.form
@@ -59,9 +59,9 @@ def login():
     found_id = user.User.find_by_username(request.form)[0]["id"]
     if found_id != None:
         session["user_id"] = found_id
-        return redirect("/dashboard")
+        return redirect(url_for("dashboard"))
     else: # This will be the result of an error with the back end (500-series error eventually)
-        return redirect("/")
+        return redirect(url_for("registration"))
 
 @app.route("/logout", methods=["POST"])
 def logout():

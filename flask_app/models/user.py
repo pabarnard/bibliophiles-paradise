@@ -1,4 +1,4 @@
-from flask_app import app, bcrypt
+from flask_app import bcrypt, db_name
 from flask import flash
 import re
 from datetime import date
@@ -8,8 +8,6 @@ from flask_app.config.mysql_connection import connect_to_db
 email_regex = re.compile(r"^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$")
 
 class User:
-    db_name = "bibliophile_schema"
-
     def __init__(self, data: dict):
         self.id = data.get("id")
         self.username = data.get("username")
@@ -24,12 +22,12 @@ class User:
     @classmethod
     def find_by_username(cls, data):
         query = "SELECT * FROM users WHERE username = %(username)s;"
-        return connect_to_db(cls.db_name, query, data)
+        return connect_to_db(db_name, query, data)
 
     @classmethod
     def find_by_email(cls, data):
         query = "SELECT * FROM users WHERE email = %(email)s;"
-        return connect_to_db(cls.db_name, query, data)
+        return connect_to_db(db_name, query, data)
     
     @classmethod
     def register_new_user(cls, data):
@@ -41,7 +39,7 @@ class User:
         }
         updated_data["password"] = bcrypt.generate_password_hash(data["password"])
         query = "INSERT INTO users (id, username, email, password) VALUES (UUID(), %(username)s, %(email)s, %(password)s);"
-        return connect_to_db(cls.db_name, query, updated_data)
+        return connect_to_db(db_name, query, updated_data)
 
     @staticmethod
     def validate_registration(form_data):
