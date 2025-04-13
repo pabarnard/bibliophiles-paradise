@@ -4,32 +4,55 @@ import requests, os
 
 GOOGLE_API_LINK = "https://www.googleapis.com/books/v1/volumes"
 
-def get_books_by_isbn(form_data):
+def get_books_by_isbn(form_data, id_set):
+    """Grabs books from Google Books API by ISBN - both 10- and 13-digit values
+
+    Args:
+        form_data (dict): Raw data from HTML form
+        id_set(set(str)): Set of IDs saved as strings
+
+    Returns:
+        list: A list of dictionaries holding book data from the Google Books API
+    """
     book_results = process_data({
         "api_key": os.getenv("GOOGLE_API_KEY"), 
         "q": "isbn:"+form_data["isbn"],
         "langRestrict": "en"
-        })
+        }, id_set)
     return book_results
 
-def get_books_by_title_and_author(form_data):
+def get_books_by_title_and_author(form_data, id_set):
+    """Grabs books from Google Books API by title and author
+
+    Args:
+        form_data (dict): Raw data from HTML form with "title" and "author" as keys
+        id_set(set(str)): Set of IDs saved as strings
+
+    Returns:
+        list: A list of dictionaries holding book data from the Google Books API
+    """
     book_results = process_data({
         "api_key": os.getenv("GOOGLE_API_KEY"), 
         "q": "intitle:"+form_data["title"]+"+"+"inauthor:"+form_data["author"],
         "langRestrict": "en"
-        })
+        }, id_set)
     return book_results
 
 # Helper function to make API call, then process raw JSON data and convert it to a form that can be saved in the database
-def process_data(query_data):
+def process_data(query_data, id_set):
     r = requests.get(GOOGLE_API_LINK, query_data)
     raw_json = r.json()
-    all_books = [] # List where each item is a dictionary holding a different search result
+    all_books = {} # Dictionary where each key is a Google Volume ID with info about the book
     for book in raw_json['items']:
         book_info = book['volumeInfo']
         # Take data from API and put it in new dictionary that's usable in case it's saved to the local databsase
         clean_book_dict = {}
-        clean_book_dict["google_volume_id"] = book['id'] if 'id' in book else ""
+        google_volume_id = book['id'] if 'id' in book else ""
+        # NOTE: TEMPORARY - skip this result if we already have this book in the database; 
+        # eventually a boolean will be used if the book is already in the database so that in
+        # the search results the button will say "Add to your shelf" OR text saying "this book is in your shelf"
+        if google_volume_id in id_set: 
+            continue
         clean_book_dict["title"] = book_info['title'] if 'title' in book_info else ""
         if "authors" in book_info:
             all_authors = ""
@@ -57,5 +80,5 @@ def process_data(query_data):
                 clean_book_dict["isbn13"] = ""
         else:
             clean_book_dict["isbn13"] = ""
-        all_books.append(clean_book_dict)
+        all_books[google_volume_id] = clean_book_dict
     return all_books

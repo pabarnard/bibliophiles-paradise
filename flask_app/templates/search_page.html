@@ -37,13 +37,17 @@
         <input type="submit" value="Search">
     </form>
     <h2>Results:</h2>
-    {% for book in book_results %}
-    <img src="{{ book.thumbnail }}">
-    <p>{{ book.title }}</p>
-    <p>by {{ book.authors }}</p>
-    <p>ISBN: {{ book.isbn13 }}</p>
-    <p>Pages: {{ book.page_count }}</p>
-    <p>Publication date: {{ book.publication_date }}</p>
+    {% for id in book_results %}
+    <img src="{{ book_results[id].thumbnail }}">
+    <p>{{ book_results[id].title }}</p>
+    <p>by {{ book_results[id].authors }}</p>
+    <p>ISBN: {{ book_results[id].isbn13 }}</p>
+    <p>Pages: {{ book_results[id].page_count }}</p>
+    <p>Publication date: {{ book_results[id].publication_date }}</p>
+    <form action="/add-book-to-database" method="POST">
+        <input type="hidden" name="google_volume_id" value="{{ id }}">
+        <input type="submit" value="Add to bookshelf">
+    </form>
     <hr/> <!-- Temporary -->
     {% endfor %}
 </body>

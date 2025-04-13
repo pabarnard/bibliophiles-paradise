@@ -18,6 +18,46 @@ class Book:
         self.thoughts = data.get("thoughts")
         self.reviews = data.get("reviews")
         self.readers = data.get("readers") # Users who added this book to their shelves
+
+    @classmethod
+    def create(cls, data: dict):
+        if "publication_date" not in data or data["publication_date"] == "":
+            query = """
+            INSERT INTO books 
+            (id, google_volume_id, title, authors, page_count, thumbnail, isbn13)
+            VALUES
+            (UUID(), %(google_volume_id)s, %(title)s, %(authors)s, %(page_count)s, %(thumbnail)s, %(isbn13)s);
+            """
+        else:
+            query = """
+            INSERT INTO books 
+            (id, google_volume_id, title, authors, publication_date, page_count, thumbnail, isbn13)
+            VALUES
+            (UUID(), %(google_volume_id)s, %(title)s, %(authors)s, %(publication_date)s, %(page_count)s, %(thumbnail)s, %(isbn13)s);
+            """
+        return connect_to_db(db_name, query, data)
+
+    @classmethod
+    def get_all(cls):
+        query = """
+        SELECT * FROM books;
+        """
+        raw_results = connect_to_db(db_name, query)
+        all_book_objects = []
+        for row in raw_results:
+            all_book_objects.append(cls(row))
+        return all_book_objects
+    
+    @classmethod
+    def get_all_ids(cls):
+        query = """
+        SELECT id, google_volume_id FROM books;
+        """
+        raw_results = connect_to_db(db_name, query)
+        all_google_ids = set([]) # Save all Google book IDs into a set for quick lookup
+        for row in raw_results:
+            all_google_ids.add(row["google_volume_id"])
+        return all_google_ids
     
     """
     Source: https://www.oreilly.com/library/view/regular-expressions-cookbook/9781449327453/ch04s13.html
