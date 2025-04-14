@@ -5,7 +5,7 @@ from flask_app.models import user
 @app.route("/", methods=["GET","POST"])
 def registration():
     if "user_id" in session:
-        return redirect(url_for("dashboard")) # Temporary home page
+        return redirect(url_for("all_books")) # Temporary home page
     if request.method == "GET":      
         error_data = {
             "username": "",
@@ -26,18 +26,18 @@ def registration():
         session["form_data"] = request.form
         return redirect(url_for("registration"))
     session.clear() # Remove form data from session
-    # Add user to database here while saving the user in session, then redirect to dashboard
+    # Add user to database here while saving the user in session, then redirect to all books page
     new_id = user.User.register_new_user(request.form)
     if new_id != None:
         session["user_id"] = new_id
-        return redirect(url_for("dashboard"))
+        return redirect(url_for("all_books"))
     else: # This will be the result of an error with the back end (500-series error eventually)
         return redirect(url_for("registration"))
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if "user_id" in session:
-        return redirect(url_for("dashboard")) # Temporary home page
+        return redirect(url_for("all_books")) # Temporary home page
     if request.method == "GET":      
         error_data = {
             "username": "",
@@ -59,7 +59,7 @@ def login():
     found_id = user.User.find_by_username(request.form)[0]["id"]
     if found_id != None:
         session["user_id"] = found_id
-        return redirect(url_for("dashboard"))
+        return redirect(url_for("all_books"))
     else: # This will be the result of an error with the back end (500-series error eventually)
         return redirect(url_for("registration"))
 

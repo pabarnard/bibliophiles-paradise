@@ -6,6 +6,10 @@
     <title>Book search</title>
 </head>
 <body>
+    <p><a href="/books">Back to all books</a></p>
+    <form action="/logout" method="POST">
+        <input type="submit" value="Log out">
+    </form>
     <h1>Search for a new book:</h1>
     <p>Search by author and title:</p>
     <form action="/search-by-title-and-author" method="POST">
@@ -36,6 +40,7 @@
         </div>
         <input type="submit" value="Search">
     </form>
+    {# FUTURE: Display books saved in database first, then books NOT in database. #}
     <h2>Results:</h2>
     {% for id in book_results %}
     <img src="{{ book_results[id].thumbnail }}">
@@ -44,10 +49,16 @@
     <p>ISBN: {{ book_results[id].isbn13 }}</p>
     <p>Pages: {{ book_results[id].page_count }}</p>
     <p>Publication date: {{ book_results[id].publication_date }}</p>
-    <form action="/add-book-to-database" method="POST">
+    {% if not book_results[id].is_in_db %}
+    <form action="/add-book-to-database-and-shelf" method="POST">
         <input type="hidden" name="google_volume_id" value="{{ id }}">
         <input type="submit" value="Add to bookshelf">
     </form>
+    {% elif book_results[id].is_in_users_shelf %}
+        <p>This book is in your shelf.</p>
+    {% else %}
+        <p>This book is in the database, but not in your shelf.</p> {# FUTURE: Add button to allow user to add book to shelf. #}
+    {% endif %}
     <hr/> <!-- Temporary -->
     {% endfor %}
 </body>

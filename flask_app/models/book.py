@@ -22,20 +22,41 @@ class Book:
     @classmethod
     def create(cls, data: dict):
         if "publication_date" not in data or data["publication_date"] == "":
-            query = """
+            book_query = """
             INSERT INTO books 
             (id, google_volume_id, title, authors, page_count, thumbnail, isbn13)
             VALUES
             (UUID(), %(google_volume_id)s, %(title)s, %(authors)s, %(page_count)s, %(thumbnail)s, %(isbn13)s);
             """
         else:
-            query = """
+            book_query = """
             INSERT INTO books 
             (id, google_volume_id, title, authors, publication_date, page_count, thumbnail, isbn13)
             VALUES
             (UUID(), %(google_volume_id)s, %(title)s, %(authors)s, %(publication_date)s, %(page_count)s, %(thumbnail)s, %(isbn13)s);
             """
-        return connect_to_db(db_name, query, data)
+        return connect_to_db(db_name,book_query,data)
+    
+    @classmethod
+    def get_by_google_id(cls,data):
+        query = """
+        SELECT * FROM books WHERE google_volume_id = %(google_volume_id)s;
+        """
+        raw_data = connect_to_db(db_name, query, data)
+        if len(raw_data) > 0:
+            return cls(raw_data[0])
+        # FUTURE: Handle if there are no books with the given ID
+
+    @classmethod
+    def add_to_shelf(cls, data):
+        # Save the new book to the logged in user's shelf
+        shelf_query = """
+        INSERT INTO bookshelves
+        (user_id, book_id)
+        VALUES
+        (%(user_id)s, %(book_id)s);
+        """
+        return connect_to_db(db_name, shelf_query, data)
 
     @classmethod
     def get_all(cls):
@@ -47,6 +68,20 @@ class Book:
         for row in raw_results:
             all_book_objects.append(cls(row))
         return all_book_objects
+    
+    @classmethod
+    def get_google_volume_ids_in_shelf(cls, data):
+        query = """
+        SELECT google_volume_id FROM bookshelves 
+        LEFT JOIN books
+        ON bookshelves.book_id = books.id
+        WHERE user_id = %(user_id)s;
+        """
+        raw_results = connect_to_db(db_name, query, data)
+        google_volume_ids = set([]) # Save book IDs in user's shelf into a set for quick lookup
+        for row in raw_results:
+            google_volume_ids.add(row["google_volume_id"])
+        return google_volume_ids
     
     @classmethod
     def get_all_ids(cls):

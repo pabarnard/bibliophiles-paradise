@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>All books read by users</title>
+</head>
+<body>
+    <p><a href="/search">Search for a book</a></p>
+    <form action="/logout" method="POST">
+        <input type="submit" value="Log out">
+    </form>
+    {# NOTE: In the future, allow books to be sortable. #}
+    {% for book in all_books %}
+        <img src="{{ book.thumbnail }}" alt="Cover of '{{ book.title }}'">
+        <p>{{ book.title }} by {{ book.authors }}</p>
+        {% if book.publication_date %}<p>{{ book.publication_date }}</p>{% endif %}
+        <p>{{ book.created_at.strftime("%B %d, %Y") }}</p>
+        {# NOTE: Display number of users reading the book here. #}
+    {% endfor %}
+</body>
+</html>
