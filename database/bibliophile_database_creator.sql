@@ -33,7 +33,6 @@ ENGINE = InnoDB;
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `bibliophile_schema`.`books` (
   `id` VARCHAR(255) NOT NULL,
-  `google_volume_id` VARCHAR(3072) NULL,
   `title` VARCHAR(3072) NULL,
   `authors` VARCHAR(3072) NULL,
   `publication_date` DATE NULL,
@@ -78,6 +77,7 @@ ENGINE = InnoDB;
 CREATE TABLE IF NOT EXISTS `bibliophile_schema`.`bookshelves` (
   `user_id` VARCHAR(255) NOT NULL,
   `book_id` VARCHAR(255) NOT NULL,
+  `created_at` DATETIME NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`user_id`, `book_id`),
   INDEX `fk_users_has_books_books3_idx` (`book_id` ASC) VISIBLE,
   INDEX `fk_users_has_books_users2_idx` (`user_id` ASC) VISIBLE,

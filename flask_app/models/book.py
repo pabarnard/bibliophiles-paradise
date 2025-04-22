@@ -5,8 +5,7 @@ import re
 
 class Book:
     def __init__(self, data: dict):
-        self.id = data.get("id")
-        self.google_volume_id = data.get("google_volume_id")
+        self.id = data.get("id") # This will hold the ID from Google Books, which should be unique
         self.title = data.get("title")
         self.authors = data.get("authors")
         self.publication_date = data.get("publication_date")
@@ -15,32 +14,32 @@ class Book:
         self.isbn13 = data.get("isbn13")
         self.created_at = data.get("created_at")
         self.updated_at = data.get("updated_at")
-        self.thoughts = data.get("thoughts")
-        self.reviews = data.get("reviews")
-        self.readers = data.get("readers") # Users who added this book to their shelves
+        self.thoughts = data.get("thoughts", [])
+        self.reviews = data.get("reviews", [])
+        self.readers = data.get("readers", []) # Users who added this book to their shelves
 
     @classmethod
     def create(cls, data: dict):
         if "publication_date" not in data or data["publication_date"] == "":
             book_query = """
             INSERT INTO books 
-            (id, google_volume_id, title, authors, page_count, thumbnail, isbn13)
+            (id, title, authors, page_count, thumbnail, isbn13)
             VALUES
-            (UUID(), %(google_volume_id)s, %(title)s, %(authors)s, %(page_count)s, %(thumbnail)s, %(isbn13)s);
+            (%(google_volume_id)s, %(title)s, %(authors)s, %(page_count)s, %(thumbnail)s, %(isbn13)s);
             """
         else:
             book_query = """
             INSERT INTO books 
-            (id, google_volume_id, title, authors, publication_date, page_count, thumbnail, isbn13)
+            (id, title, authors, publication_date, page_count, thumbnail, isbn13)
             VALUES
-            (UUID(), %(google_volume_id)s, %(title)s, %(authors)s, %(publication_date)s, %(page_count)s, %(thumbnail)s, %(isbn13)s);
+            (%(google_volume_id)s, %(title)s, %(authors)s, %(publication_date)s, %(page_count)s, %(thumbnail)s, %(isbn13)s);
             """
         return connect_to_db(db_name,book_query,data)
     
     @classmethod
     def get_by_google_id(cls,data):
         query = """
-        SELECT * FROM books WHERE google_volume_id = %(google_volume_id)s;
+        SELECT * FROM books WHERE id = %(google_volume_id)s;
         """
         raw_data = connect_to_db(db_name, query, data)
         if len(raw_data) > 0:
@@ -70,9 +69,9 @@ class Book:
         return all_book_objects
     
     @classmethod
-    def get_google_volume_ids_in_shelf(cls, data):
+    def get_google_ids_in_shelf(cls, data):
         query = """
-        SELECT google_volume_id FROM bookshelves 
+        SELECT id FROM bookshelves 
         LEFT JOIN books
         ON bookshelves.book_id = books.id
         WHERE user_id = %(user_id)s;
@@ -80,18 +79,18 @@ class Book:
         raw_results = connect_to_db(db_name, query, data)
         google_volume_ids = set([]) # Save book IDs in user's shelf into a set for quick lookup
         for row in raw_results:
-            google_volume_ids.add(row["google_volume_id"])
+            google_volume_ids.add(row["id"])
         return google_volume_ids
     
     @classmethod
-    def get_all_ids(cls):
+    def get_all_google_book_ids(cls):
         query = """
-        SELECT id, google_volume_id FROM books;
+        SELECT id FROM books;
         """
         raw_results = connect_to_db(db_name, query)
         all_google_ids = set([]) # Save all Google book IDs into a set for quick lookup
         for row in raw_results:
-            all_google_ids.add(row["google_volume_id"])
+            all_google_ids.add(row["id"])
         return all_google_ids
     
     """

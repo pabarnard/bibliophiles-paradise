@@ -27,9 +27,10 @@ def registration():
         return redirect(url_for("registration"))
     session.clear() # Remove form data from session
     # Add user to database here while saving the user in session, then redirect to all books page
-    new_id = user.User.register_new_user(request.form)
-    if new_id != None:
-        session["user_id"] = new_id
+    user.User.register_new_user(request.form)
+    new_user_id = user.User.find_by_email(request.form)[0]["id"]
+    if new_user_id != None:
+        session["user_id"] = new_user_id
         return redirect(url_for("all_books"))
     else: # This will be the result of an error with the back end (500-series error eventually)
         return redirect(url_for("registration"))

@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Library</title>
+</head>
+<body>
+    <h1>Here are your books, {{ this_user.username }}:</h1>
+    <p><a href="/books">All books</a></p>
+    <form action="/logout" method="POST">
+        <input type="submit" value="Log out">
+    </form>
+    {# Future: Add sorting #}
+    {% if this_user.books|length == 0 %}
+        <p>You have not added any books yet.</p>
+    {% else %}
+        {% for this_book in this_user.books %}
+            <img src="{{ this_book.thumbnail }}" alt="Cover for {{ this_book.title }}">
+            <p>{{ this_book.title }}</p>
+            <p>by {{ this_book.authors }}</p>
+            <p>You added this book on {{ this_book.created_at.strftime("%B %d, %Y") }}.</p>
+        {% endfor %}
+    {% endif %}
+</body>
+</html>

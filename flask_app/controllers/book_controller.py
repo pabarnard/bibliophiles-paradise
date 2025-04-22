@@ -1,7 +1,7 @@
 from flask_app import app
 from flask_app.models import book
 from flask_app.services import google_books_api
-from flask import request, flash, render_template, session, redirect, url_for, get_flashed_messages
+from flask import request, render_template, session, redirect, url_for, get_flashed_messages
 
 @app.route("/books")
 def all_books():
@@ -18,7 +18,13 @@ def search_page():
     form_data["author"] = session.get("author", "")
     form_data["title"] = session.get("title", "")
     form_data["isbn"] = session.get("isbn", "")
-    book_results = session.get("book_results", [])
+    # Check to see what GET request last route was (via request.referrer key) - if we did a search, 
+    # it was from "/search", so show the history, otherwise don't show the last search
+    if request.referrer.split("/")[-1] != "search":
+        session.pop("book_results", []) # Remove results from session, if possible
+        book_results = []
+    else:
+        book_results = session.get("book_results", [])
     error_msgs = get_flashed_messages(with_categories=True)
     error_data = {
         "author": "",
@@ -39,8 +45,8 @@ def search_by_isbn():
     if not is_valid:
         return redirect(url_for("search_page"))
     # Fetch results and keep track of which ones have been saved in the database and saved in user's shelf
-    google_book_ids_in_db = book.Book.get_all_ids()
-    shelf_google_volume_ids = book.Book.get_google_volume_ids_in_shelf({"user_id": session["user_id"]})
+    google_book_ids_in_db = book.Book.get_all_google_book_ids()
+    shelf_google_volume_ids = book.Book.get_google_ids_in_shelf({"user_id": session["user_id"]})
     book_results = google_books_api.get_books_by_isbn(request.form, google_book_ids_in_db, shelf_google_volume_ids)
     # NOTE: In the future, add logic for if there's an error with the API
     session["book_results"] = book_results
@@ -57,8 +63,8 @@ def search_by_title_and_author():
     if not is_valid:
         return redirect(url_for("search_page"))
     # Fetch results and keep track of which ones have been saved in the database and saved in user's shelf
-    google_book_ids_in_db = book.Book.get_all_ids()
-    shelf_google_volume_ids = book.Book.get_google_volume_ids_in_shelf({"user_id": session["user_id"]})
+    google_book_ids_in_db = book.Book.get_all_google_book_ids()
+    shelf_google_volume_ids = book.Book.get_google_ids_in_shelf({"user_id": session["user_id"]})
     book_results = google_books_api.get_books_by_title_and_author(request.form, google_book_ids_in_db, shelf_google_volume_ids)
     # NOTE: In the future, add logic for if there's an error with the API
     session["book_results"] = book_results

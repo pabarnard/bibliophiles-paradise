@@ -1,11 +1,14 @@
 from flask_app import bcrypt, db_name
+from flask_app.models import book
 from flask import flash
 import re
 from datetime import date
 from dateutil.relativedelta import relativedelta
 from flask_app.config.mysql_connection import connect_to_db
+from typing import List
 
 email_regex = re.compile(r"^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$")
+
 
 class User:
     def __init__(self, data: dict):
@@ -15,9 +18,9 @@ class User:
         self.password = data.get("password")
         self.created_at = data.get("created_at")
         self.updated_at = data.get("updated_at")
-        self.bookshelf = data.get("bookshelf")
-        self.reviews = data.get("reviews")
-        self.thoughts = data.get("thoughts")
+        self.books : List[book.Book] = data.get("books", [])
+        # self.reviews = data.get("reviews")
+        self.thoughts = data.get("thoughts", [])
 
     @classmethod
     def find_by_username(cls, data):
@@ -28,6 +31,36 @@ class User:
     def find_by_email(cls, data):
         query = "SELECT * FROM users WHERE email = %(email)s;"
         return connect_to_db(db_name, query, data)
+
+    @classmethod
+    def get_user_with_books(cls, data):
+        query = """
+        SELECT * FROM users
+        LEFT JOIN bookshelves ON users.id = bookshelves.user_id
+        LEFT JOIN books ON bookshelves.book_id = books.id
+        WHERE users.id = %(id)s;
+        """
+        raw_data = connect_to_db(db_name,query,data)
+        # FUTURE: Look into how to handle if user is not found in the first place
+        this_user = cls(raw_data[0])
+        this_user.password = "" # Clear password field
+        print(raw_data)
+        # Create Book and Thought objects and link to this User
+        for book_row in raw_data:
+            if book_row.get("books.id"): # Needed to ensure we add non-empty Book objects
+                book_data = {
+                    "id": book_row.get("books.id"), # Note the table name due to duplicate column when joining tables
+                    "title": book_row.get("title"),
+                    "authors": book_row.get("authors"),
+                    "publication_date": book_row.get("publication_date"),
+                    "page_count": book_row.get("page_count"),
+                    "thumbnail": book_row.get("thumbnail"),
+                    "isbn13": book_row.get("isbn13"),
+                    "created_at": book_row.get("books.created_at"),
+                    "updated_at": book_row.get("books.updated_at")
+                }
+                this_user.books.append(book.Book(book_data))
+        return this_user
     
     @classmethod
     def register_new_user(cls, data):
